@@ -6,6 +6,7 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -13,14 +14,24 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+
+import static android.app.Activity.RESULT_OK;
 
 public class MainActivityFragment extends Fragment {
+   private static final String TAG = "MainActivityFragment";
+
    private DoodleView doodleView; // handles touch events and draws
    private float acceleration;
    private float currentAcceleration;
@@ -33,6 +44,9 @@ public class MainActivityFragment extends Fragment {
    // used to identify the request for using external storage, which
    // the save image feature needs
    private static final int SAVE_IMAGE_PERMISSION_REQUEST_CODE = 1;
+
+   // request code for picking an image from gallery
+   private static final int PICK_IMAGE_CODE = 2;
 
    // called when Fragment's view needs to be created
    @Override
@@ -154,6 +168,9 @@ public class MainActivityFragment extends Fragment {
                new LineWidthDialogFragment();
             widthDialog.show(getFragmentManager(), "line width dialog");
             return true; // consume the menu event
+         case R.id.set_background_image:
+            setBackgroundImage();
+            return true;
          case R.id.delete_drawing:
             confirmErase(); // confirm before erasing image
             return true; // consume the menu event
@@ -214,6 +231,50 @@ public class MainActivityFragment extends Fragment {
       }
    }
 
+   private void setBackgroundImage() {
+      if (getContext().checkSelfPermission(
+              Manifest.permission.READ_EXTERNAL_STORAGE) !=
+              PackageManager.PERMISSION_GRANTED) {
+
+         // shows an explanation for why permission is needed
+         if (shouldShowRequestPermissionRationale(
+                 Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            AlertDialog.Builder builder =
+                    new AlertDialog.Builder(getActivity());
+
+            // set Alert Dialog's message
+            builder.setMessage(R.string.permission_explanation_read);
+
+            // add an OK button to the dialog
+            builder.setPositiveButton(android.R.string.ok,
+                    new DialogInterface.OnClickListener() {
+                       @Override
+                       public void onClick(DialogInterface dialog, int which) {
+                          // request permission
+                          requestPermissions(new String[]{
+                                  Manifest.permission.READ_EXTERNAL_STORAGE},
+                                  PICK_IMAGE_CODE);
+                       }
+                    }
+            );
+
+            // display the dialog
+            builder.create().show();
+         } else {
+            // request permission
+            requestPermissions(
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    PICK_IMAGE_CODE);
+         }
+      } else {
+         // App already has read permission, get image from gallery
+         Intent intent = new Intent();
+         intent.setType("image/*");
+         intent.setAction(Intent.ACTION_GET_CONTENT);
+         startActivityForResult(Intent.createChooser(intent, "Select Image"), PICK_IMAGE_CODE);
+      }
+   }
+
    // called by the system when the user either grants or denies the
    // permission for saving an image
    @Override
@@ -226,6 +287,39 @@ public class MainActivityFragment extends Fragment {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
                doodleView.saveImage(); // save the image
             return;
+         case PICK_IMAGE_CODE:
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
+               setBackgroundImage(); // set background image
+            return;
+      }
+   }
+
+   //  Called when user has picked a background image from gallery
+   @Override
+   public void onActivityResult(int requestCode, int resultCode, Intent data) {
+      super.onActivityResult(requestCode, resultCode, data);
+
+      if (resultCode == RESULT_OK && requestCode == PICK_IMAGE_CODE) {
+         if (data != null) {
+            try {
+               InputStream inputStream = getActivity().getContentResolver().openInputStream(data.getData());
+               doodleView.setBackgroundImage(inputStream);
+            } catch (FileNotFoundException exception) {
+               Log.e(TAG, "onActivityResult" + exception);
+               Toast message = Toast.makeText(getContext(),
+                       R.string.message_error_load_background_image, Toast.LENGTH_SHORT);
+               message.setGravity(Gravity.CENTER, message.getXOffset() / 2,
+                       message.getYOffset() / 2);
+               message.show();
+            }
+         } else {
+            Log.e(TAG, "onActivityResult: data is null");
+            Toast message = Toast.makeText(getContext(),
+                    R.string.message_error_load_background_image, Toast.LENGTH_SHORT);
+            message.setGravity(Gravity.CENTER, message.getXOffset() / 2,
+                    message.getYOffset() / 2);
+            message.show();
+         }
       }
    }
 

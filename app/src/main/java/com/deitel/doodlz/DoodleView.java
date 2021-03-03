@@ -4,11 +4,13 @@ package com.deitel.doodlz;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.provider.MediaStore;
 import android.support.v4.print.PrintHelper;
 import android.util.AttributeSet;
@@ -17,11 +19,14 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 // custom View for drawing
 public class DoodleView extends View {
+   private static final String TAG = "DoodleView";
+
    // used to determine whether user moved a finger enough to draw again
    private static final float TOUCH_TOLERANCE = 10;
 
@@ -235,6 +240,11 @@ public class DoodleView extends View {
             message.getYOffset() / 2);
          message.show();
       }
+   }
+
+   public void setBackgroundImage(InputStream inputStream) {
+      Bitmap backgroundBitmap = BitmapFactory.decodeStream(inputStream);
+      bitmapCanvas.drawBitmap(backgroundBitmap, null, new Rect(0,0,getWidth(), getHeight()), null);
    }
 }
 
