@@ -15,12 +15,18 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 
 // class for the Select Color dialog
 public class ColorDialogFragment extends DialogFragment {
+
+   // Selected color for...
+   public static final int BRUSH = 1;
+   public static final int BACKGROUND = 2;
+
    private SeekBar alphaSeekBar;
    private SeekBar redSeekBar;
    private SeekBar greenSeekBar;
    private SeekBar blueSeekBar;
    private View colorView;
    private int color;
+   private int colorFor = BRUSH;
 
    // create an AlertDialog and return it
    @Override
@@ -33,7 +39,10 @@ public class ColorDialogFragment extends DialogFragment {
       builder.setView(colorDialogView); // add GUI to dialog
 
       // set the AlertDialog's message
-      builder.setTitle(R.string.title_color_dialog);
+      if (colorFor == BRUSH)
+         builder.setTitle(R.string.title_brush_color_dialog);
+      else if (colorFor == BACKGROUND)
+         builder.setTitle(R.string.title_background_color_dialog);
 
       // get the color SeekBars and set their onChange listeners
       alphaSeekBar = (SeekBar) colorDialogView.findViewById(
@@ -64,9 +73,16 @@ public class ColorDialogFragment extends DialogFragment {
       builder.setPositiveButton(R.string.button_set_color,
          new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-               doodleView.setDrawingColor(color);
+               switch (colorFor) {
+                  case BRUSH:
+                     doodleView.setDrawingColor(color);
+                     break;
+                  case BACKGROUND:
+                     doodleView.setCanvasBackgroundColor(color);
+                     break;
+                  }
+               }
             }
-         }
       );
 
       return builder.create(); // return dialog
@@ -119,6 +135,10 @@ public class ColorDialogFragment extends DialogFragment {
          @Override
          public void onStopTrackingTouch(SeekBar seekBar) {} // required
       };
+
+   public void setColorFor(int c) {
+      colorFor = c;
+   }
 }
 
 /**************************************************************************

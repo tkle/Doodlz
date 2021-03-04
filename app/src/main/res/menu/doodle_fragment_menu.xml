@@ -16,10 +16,19 @@
    </item>
 
    <item
-       android:id="@+id/set_background_image"
+       android:id="@+id/set_background"
        android:icon="@android:drawable/ic_menu_gallery"
-       android:title="@string/set_background_image"
-       app:showAsAction="ifRoom"></item>
+       android:title="@string/set_background"
+       app:showAsAction="ifRoom">
+      <menu>
+         <item
+             android:id="@+id/set_background_color"
+             android:title="@string/set_background_color"/>
+         <item
+             android:id="@+id/set_background_image"
+             android:title="@string/set_background_image"/>
+      </menu>
+   </item>
 
    <item
       android:id="@+id/delete_drawing"

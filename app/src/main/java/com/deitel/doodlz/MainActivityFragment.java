@@ -160,13 +160,19 @@ public class MainActivityFragment extends Fragment {
       // switch based on the MenuItem id
       switch (item.getItemId()) {
          case R.id.color:
-            ColorDialogFragment colorDialog = new ColorDialogFragment();
-            colorDialog.show(getFragmentManager(), "color dialog");
+            ColorDialogFragment brushColorDialog = new ColorDialogFragment();
+            brushColorDialog.setColorFor(ColorDialogFragment.BRUSH);
+            brushColorDialog.show(getFragmentManager(), "color dialog");
             return true; // consume the menu event
          case R.id.line_width:
             LineWidthDialogFragment widthDialog =
                new LineWidthDialogFragment();
             widthDialog.show(getFragmentManager(), "line width dialog");
+            return true; // consume the menu event
+         case R.id.set_background_color:
+            ColorDialogFragment backgroundColorDialog = new ColorDialogFragment();
+            backgroundColorDialog.setColorFor(ColorDialogFragment.BACKGROUND);
+            backgroundColorDialog.show(getFragmentManager(), "color dialog");
             return true; // consume the menu event
          case R.id.set_background_image:
             setBackgroundImage();

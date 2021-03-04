@@ -246,6 +246,10 @@ public class DoodleView extends View {
       Bitmap backgroundBitmap = BitmapFactory.decodeStream(inputStream);
       bitmapCanvas.drawBitmap(backgroundBitmap, null, new Rect(0,0,getWidth(), getHeight()), null);
    }
+
+   public void setCanvasBackgroundColor(int color) {
+      bitmap.eraseColor(color); // set background color
+   }
 }
 
 /**************************************************************************
